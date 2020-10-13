@@ -1,20 +1,31 @@
 Package: SkeweDF
-Title: What the Package Does (One Line, Title Case)
+Title: SkeweDF: A method for identification of skewed distributions determined by a birth-death processes with rational transition rates
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    person(given = "Andre",
+           family = "Grageda",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
+           email = "gragedaa@upstate.edu",
            comment = c(ORCID = "YOUR-ORCID-ID"))
 Description: What the package does (one paragraph).
-License: What license it uses
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
-Imports: Rcpp, tidyverse, parallel, zipfR, optimr
-RoxygenNote: 7.0.2
+Imports: Rcpp (>= 1.0.5),
+ dplyr (>= 1.0.2),
+ parallel (>= 3.6.3),
+ zipfR (>= 0.6-66),
+ optimr (>= 2019-12.4),
+ purrr (>= 0.3.4),
+ matrixStats (>= 0.56.0),
+ stringr (>= 1.4.0),
+ methods (>= 3.6.3),
+ grDevices (>= 3.6.3),
+ graphics (>= 3.6.3),
+ utils (>= 3.6.3)
+RoxygenNote: 7.1.1
 LinkingTo: Rcpp
 NeedsCompilation: yes
 Packaged: 2020-08-24 20:46:50 UTC; user
-Author: First Last [aut, cre] (<https://orcid.org/YOUR-ORCID-ID>)
-Maintainer: First Last <first.last@example.com>
+Author: Andre Grageda [aut, cre] (<https://orcid.org/YOUR-ORCID-ID>)
+Maintainer: Andre Grageda <gragedaa@upstate.edu>

@@ -55,8 +55,8 @@ Generalized_Pareto <- function(k, theta, c, b, rho) {
 #' @param b Parameter of the Kolmogorov Waring distribution function
 #' @param theta Parameter of the Kolmogorov Waring distribution function
 #' @export
-Kolmogorov_Waring_P0_calc <- function(a, b, t) {
-    .Call(`_SkeweDF_Kolmogorov_Waring_P0_calc`, a, b, t)
+Kolmogorov_Waring_P0_calc <- function(a, b, theta) {
+    .Call(`_SkeweDF_Kolmogorov_Waring_P0_calc`, a, b, theta)
 }
 
 #' Kolmogorov Waring P0
@@ -90,6 +90,14 @@ RGHD_P0_calc_pi <- function(y, m, r, q) {
     .Call(`_SkeweDF_RGHD_P0_calc_pi`, y, m, r, q)
 }
 
+#' 2m-RGHD Distribution Function P0 calculation
+#' 
+#' Calculates P0 given a set of parameters
+#' @param sigma_upper Int which determine number of iterations for calculation to go through, this is needed to approximate sigma infinity
+#' @param m Parameter of the 2m-RGHD function, this defines number of r and q parameters of the function
+#' @param r R vector containing r parameters from 1:m
+#' @param q R vector containing q parameters from 1:m
+#' @export
 RGHD_P0_calc <- function(sigma_upper, m, r, q) {
     .Call(`_SkeweDF_RGHD_P0_calc`, sigma_upper, m, r, q)
 }

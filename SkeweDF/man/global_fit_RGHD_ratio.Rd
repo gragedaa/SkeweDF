@@ -29,15 +29,3 @@ global_fit_RGHD_ratio(
 \description{
 This function generates a single set of optimized parameters and Psi Criterion for a given function within specified starting parameter bounds. This function uses Limited Memory BFGS as it's gradient descent algorithm.
 }
-\examples{
-obs_data <- c(16362,7910,4563,2880,1992,1242,936,734,553,346,253,296,185,210,120,121,119,94,87,55,47,60,67,26,24,54,32,31,16,19,19,20,11,22,21,25,8,8,28,9,4,4,2,8,6,5,1,9,0,6,2,4,2,1,0,4,3,2,6,5,3,1,1,0,3,4,0,1,0,0,0,1,1,0,0,0,0,0,0,3,0,0,0,0,1,0,0,2,1,5,0,0,0,1,1,1,0,0,0,0,0,0,0,5,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4)
-param_bounds <- list(seq(1,5,0.1),seq(1,5,0.1),seq(0.1,3,0.1),seq(0.1,3,0.1))
-parameters <- global_fit_RGHD_ratio(param_bounds, obs_data, iter = 3, n_cores = 12)
-
-#Or if a cluster is defined
-cl <- makeCluster(12)
-clusterCall(cl, function() library(tidyverse))
-clusterCall(cl, function() library(optimr))
-clusterCall(cl, function() library(SkeweDF))
-parameters <- global_fit_RGHD_ratio(param_bounds, obs_data, iter = 3, clust = cl)
-}

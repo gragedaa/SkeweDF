@@ -4,7 +4,7 @@
 \alias{Kolmogorov_Waring_P0_calc}
 \title{Kolmogorov Waring P0 calculation}
 \usage{
-Kolmogorov_Waring_P0_calc(a, b, t)
+Kolmogorov_Waring_P0_calc(a, b, theta)
 }
 \arguments{
 \item{a}{Parameter of the Kolmogorov Waring distribution function}

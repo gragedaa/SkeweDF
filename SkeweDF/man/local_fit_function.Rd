@@ -7,12 +7,14 @@
 local_fit_function(
   param_bounds,
   data,
-  model_fn,
+  model_fn_name,
   weighted_rt = F,
   par_chunk = 100,
   par_chunk_size = 10,
   n_cores = 1,
-  clust
+  clust,
+  left_trunc = 1,
+  right_trunc = left_trunc + length(data) - 1
 )
 }
 \arguments{
@@ -20,7 +22,7 @@ local_fit_function(
 
 \item{data}{Vector of observed values}
 
-\item{model_fn}{Function of theoretical model to be used. For example, for Generalized_Yule(n, rho, alpha), model_fn <- Generalied_Yule}
+\item{model_fn_name}{Character vector indicating name of function of theoretical model to be used. For example, for Generalized_Yule(n, rho, alpha), model_fn_name <- 'Generalied Yule'}
 
 \item{weighted_rt}{Boolean used to determine if the weighted right-tail cumulative distribution function should be used or not.}
 
@@ -31,19 +33,11 @@ local_fit_function(
 \item{n_cores}{Integer used to indicate number of cores to be used for this function if a socket cluster object is not defined.}
 
 \item{clust}{socket cluster object from 'parallel::makeCluster()'. This is used if you have already generated a socket cluster object and would like to run this functoin on it. If no object is defined, one will be made for this function call.}
+
+\item{left_trunc}{Int used to determine starting index of model to use for optimization}
+
+\item{right_trunc}{Int used to determine ending index of model to use for optimization}
 }
 \description{
 This function generates a table of optimized parameters and Psi Criterion for a given function within specified starting parameter bounds. This function uses Limited Memory BFGS as it's gradient descent algorithm.
-}
-\examples{
-obs_data <- c(16362,7910,4563,2880,1992,1242,936,734,553,346,253,296,185,210,120,121,119,94,87,55,47,60,67,26,24,54,32,31,16,19,19,20,11,22,21,25,8,8,28,9,4,4,2,8,6,5,1,9,0,6,2,4,2,1,0,4,3,2,6,5,3,1,1,0,3,4,0,1,0,0,0,1,1,0,0,0,0,0,0,3,0,0,0,0,1,0,0,2,1,5,0,0,0,1,1,1,0,0,0,0,0,0,0,5,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4)
-param_bounds <- list(seq(0.1,5,0.1),seq(0.1,5,0.1),seq(0.01,1,0.01))
-parameters <- local_fit_function(param_bounds = param_bounds, data = obs_data, model_fn = Kolmogorov_Waring, n_cores = 12)
-
-#Or if a cluster is defined
-cl <- makeCluster(12)
-clusterCall(cl, function() library(tidyverse))
-clusterCall(cl, function() library(optimr))
-clusterCall(cl, function() library(SkeweDF))
-parameters <- local_fit_function(param_bounds = param_bounds, data = obs_data, model_fn = Kolmogorov_Waring, clust = cl)
 }

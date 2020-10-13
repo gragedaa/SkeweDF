@@ -18,6 +18,6 @@ This function generates the Psi Criterion goodness of fit value given an empiric
 }
 \examples{
 obs_data <- c(100,75,20,1)
-model_data <- theoretical_model(param1,param2,param3)
+model_data <- Kolmogorov_Waring(length(obs_data), 2, 3, 0.9)
 psi <- psi_criterion(obs_data, model_data, 3)
 }
