@@ -24,8 +24,10 @@ double RGHD_P0_calc_function(int k, int m, Rcpp::NumericVector r, Rcpp::NumericV
 	*/
 	
 	for(int i = 0; i < m; i++){
-	  rc[i] = r[i] + (k * (i+1));
-	  qc[i] = q[i] + (k * (i+1));
+	  //rc[i] = r[i] + (k * (i+1));
+	  //qc[i] = q[i] + (k * (i+1));
+	  rc[i] = k + r[i] - 1;
+	  qc[i] = k + q[i];
 	}
 	
   double r_product = 1;
@@ -43,7 +45,7 @@ double RGHD_P0_calc_function(int k, int m, Rcpp::NumericVector r, Rcpp::NumericV
 double RGHD_P0_calc_pi(int y, int m, Rcpp::NumericVector r, Rcpp::NumericVector q){
   double cumulative_product = 1;
   
-  for(int i = 0; i < y; i++){
+  for(int i = 1; i <= y; i++){
     cumulative_product *= RGHD_P0_calc_function(i,m,r,q);
   }
   return(cumulative_product);
@@ -110,9 +112,10 @@ double RGHD_P0(int m, Rcpp::NumericVector r, Rcpp::NumericVector q){
 std::vector<double> RGHD(int J, int m, Rcpp::NumericVector r, Rcpp::NumericVector q, int P0_iter=100, bool P0_included = false){
 	std::vector<double> p(J+1);
   
-	double sum_p = 0;
+	
 	//p[0] = RGHD_P0(m, r, q); // calculate P0
 	p[0] = RGHD_P0_calc(P0_iter,m, r, q); // calculate P0
+	//double sum_p = p[0];
 	
 	Rcpp::NumericVector rc = clone(r);
 	Rcpp::NumericVector qc = clone(q);
@@ -121,38 +124,20 @@ std::vector<double> RGHD(int J, int m, Rcpp::NumericVector r, Rcpp::NumericVecto
 	
 	for(int i = 1; i < J+1; i++){// loop will calculate P1 - PJ
 		
-		double r_product = 1;
-	  double q_product = 1;
+	double r_product = 1;
+	double q_product = 1;
 	  
-	  for(int j = 0; j < m; j++){ // increment all parameters by 1 then get the product 
-	    rc[j]++;
-	    r_product *= rc[j];
+	  for(int j = 0; j < m; j++){ 
+	    r_product *= i + rc[j] - 1;
 	  }
-	  for(int j = 0; j < m; j++){ // increment all parameters by 1 then get the product 
-	    qc[j]++;
-	    q_product *= qc[j];
+	  for(int j = 0; j < m; j++){ 
+	    q_product *= i + qc[j];
 	  }
 	  
 	  p[i] = p[i-1] * (r_product / q_product); // recursive calculation
 		
-		sum_p += p[i]; // calculate sum from P1 - PJ, needed to right side truncation
+		//sum_p += p[i]; // calculate sum from P1 - PJ, needed to right side truncation
 	}
 	
-	sum_p += p[0];
-	
-	if(P0_included){
-	  std::vector<double> output(J+1);
-	  for(int i = 0; i < J+1; i++){// this loop will interate through P1 - PJ normalizing each by the previously calculated sum, starting at P1 is the left side truncation and the normalization is the right side truncation
-	    output[i] =  p[i] / sum_p;
-	  }
-	  return(output);
-	}else{
-	  std::vector<double> output(J);
-	  sum_p -= p[0];
-	  for(int i = 0; i < J; i++){// this loop will interate through P1 - PJ normalizing each by the previously calculated sum, starting at P1 is the left side truncation and the normalization is the right side truncation
-	    output[i] =  p[i+1] / sum_p;
-	  }
-	  return(output);
-	}
+	  return(p);
 }
-            
