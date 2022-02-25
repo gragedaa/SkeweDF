@@ -1,6 +1,6 @@
 Package: SkeweDF
 Title: Optimization of Skewed Distributions with Birth-Death Processes
-Version: 0.1.1
+Version: 0.2.0
 Authors@R: 
     person(given = "Andre",
            family = "Grageda",
