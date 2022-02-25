@@ -5,115 +5,29 @@
 
 using namespace Rcpp;
 
-// Generalized_Pareto_calc_function
-double Generalized_Pareto_calc_function(int m, double c, double b, double rho);
-RcppExport SEXP _SkeweDF_Generalized_Pareto_calc_function(SEXP mSEXP, SEXP cSEXP, SEXP bSEXP, SEXP rhoSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type m(mSEXP);
-    Rcpp::traits::input_parameter< double >::type c(cSEXP);
-    Rcpp::traits::input_parameter< double >::type b(bSEXP);
-    Rcpp::traits::input_parameter< double >::type rho(rhoSEXP);
-    rcpp_result_gen = Rcpp::wrap(Generalized_Pareto_calc_function(m, c, b, rho));
-    return rcpp_result_gen;
-END_RCPP
-}
-// Generalized_Pareto_calc_pi
-double Generalized_Pareto_calc_pi(double k, double theta, double c, double b, double rho);
-RcppExport SEXP _SkeweDF_Generalized_Pareto_calc_pi(SEXP kSEXP, SEXP thetaSEXP, SEXP cSEXP, SEXP bSEXP, SEXP rhoSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< double >::type k(kSEXP);
-    Rcpp::traits::input_parameter< double >::type theta(thetaSEXP);
-    Rcpp::traits::input_parameter< double >::type c(cSEXP);
-    Rcpp::traits::input_parameter< double >::type b(bSEXP);
-    Rcpp::traits::input_parameter< double >::type rho(rhoSEXP);
-    rcpp_result_gen = Rcpp::wrap(Generalized_Pareto_calc_pi(k, theta, c, b, rho));
-    return rcpp_result_gen;
-END_RCPP
-}
-// Generalized_Pareto_calc_P0_delta
-double Generalized_Pareto_calc_P0_delta(double theta, double c, double b, double rho, double delta);
-RcppExport SEXP _SkeweDF_Generalized_Pareto_calc_P0_delta(SEXP thetaSEXP, SEXP cSEXP, SEXP bSEXP, SEXP rhoSEXP, SEXP deltaSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< double >::type theta(thetaSEXP);
-    Rcpp::traits::input_parameter< double >::type c(cSEXP);
-    Rcpp::traits::input_parameter< double >::type b(bSEXP);
-    Rcpp::traits::input_parameter< double >::type rho(rhoSEXP);
-    Rcpp::traits::input_parameter< double >::type delta(deltaSEXP);
-    rcpp_result_gen = Rcpp::wrap(Generalized_Pareto_calc_P0_delta(theta, c, b, rho, delta));
-    return rcpp_result_gen;
-END_RCPP
-}
-// Generalized_Pareto_calc_P0_iter
-double Generalized_Pareto_calc_P0_iter(double theta, double c, double b, double rho, int iter);
-RcppExport SEXP _SkeweDF_Generalized_Pareto_calc_P0_iter(SEXP thetaSEXP, SEXP cSEXP, SEXP bSEXP, SEXP rhoSEXP, SEXP iterSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< double >::type theta(thetaSEXP);
-    Rcpp::traits::input_parameter< double >::type c(cSEXP);
-    Rcpp::traits::input_parameter< double >::type b(bSEXP);
-    Rcpp::traits::input_parameter< double >::type rho(rhoSEXP);
-    Rcpp::traits::input_parameter< int >::type iter(iterSEXP);
-    rcpp_result_gen = Rcpp::wrap(Generalized_Pareto_calc_P0_iter(theta, c, b, rho, iter));
-    return rcpp_result_gen;
-END_RCPP
-}
-// Generalized_Pareto
-std::vector<double> Generalized_Pareto(int k, double theta, double c, double b, double rho);
-RcppExport SEXP _SkeweDF_Generalized_Pareto(SEXP kSEXP, SEXP thetaSEXP, SEXP cSEXP, SEXP bSEXP, SEXP rhoSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type k(kSEXP);
-    Rcpp::traits::input_parameter< double >::type theta(thetaSEXP);
-    Rcpp::traits::input_parameter< double >::type c(cSEXP);
-    Rcpp::traits::input_parameter< double >::type b(bSEXP);
-    Rcpp::traits::input_parameter< double >::type rho(rhoSEXP);
-    rcpp_result_gen = Rcpp::wrap(Generalized_Pareto(k, theta, c, b, rho));
-    return rcpp_result_gen;
-END_RCPP
-}
-// Kolmogorov_Waring_P0_calc
-double Kolmogorov_Waring_P0_calc(double a, double b, double theta);
-RcppExport SEXP _SkeweDF_Kolmogorov_Waring_P0_calc(SEXP aSEXP, SEXP bSEXP, SEXP thetaSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< double >::type a(aSEXP);
-    Rcpp::traits::input_parameter< double >::type b(bSEXP);
-    Rcpp::traits::input_parameter< double >::type theta(thetaSEXP);
-    rcpp_result_gen = Rcpp::wrap(Kolmogorov_Waring_P0_calc(a, b, theta));
-    return rcpp_result_gen;
-END_RCPP
-}
 // Kolmogorov_Waring_P0
-double Kolmogorov_Waring_P0(double a, double b, double theta);
-RcppExport SEXP _SkeweDF_Kolmogorov_Waring_P0(SEXP aSEXP, SEXP bSEXP, SEXP thetaSEXP) {
+double Kolmogorov_Waring_P0(double a1, double a2, double b, double theta);
+RcppExport SEXP _SkeweDF_Kolmogorov_Waring_P0(SEXP a1SEXP, SEXP a2SEXP, SEXP bSEXP, SEXP thetaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< double >::type a(aSEXP);
+    Rcpp::traits::input_parameter< double >::type a1(a1SEXP);
+    Rcpp::traits::input_parameter< double >::type a2(a2SEXP);
     Rcpp::traits::input_parameter< double >::type b(bSEXP);
     Rcpp::traits::input_parameter< double >::type theta(thetaSEXP);
-    rcpp_result_gen = Rcpp::wrap(Kolmogorov_Waring_P0(a, b, theta));
+    rcpp_result_gen = Rcpp::wrap(Kolmogorov_Waring_P0(a1, a2, b, theta));
     return rcpp_result_gen;
 END_RCPP
 }
 // Kolmogorov_Waring
-std::vector<double> Kolmogorov_Waring(int n, double a, double b, double theta);
+std::vector<double> Kolmogorov_Waring(int n, Rcpp::NumericVector a, Rcpp::NumericVector b, double theta);
 RcppExport SEXP _SkeweDF_Kolmogorov_Waring(SEXP nSEXP, SEXP aSEXP, SEXP bSEXP, SEXP thetaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    Rcpp::traits::input_parameter< double >::type a(aSEXP);
-    Rcpp::traits::input_parameter< double >::type b(bSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type a(aSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type b(bSEXP);
     Rcpp::traits::input_parameter< double >::type theta(thetaSEXP);
     rcpp_result_gen = Rcpp::wrap(Kolmogorov_Waring(n, a, b, theta));
     return rcpp_result_gen;
@@ -189,4 +103,20 @@ BEGIN_RCPP
     rcpp_result_gen = Rcpp::wrap(RGHD(J, m, r, q, P0_iter, P0_included));
     return rcpp_result_gen;
 END_RCPP
+}
+
+static const R_CallMethodDef CallEntries[] = {
+    {"_SkeweDF_Kolmogorov_Waring_P0", (DL_FUNC) &_SkeweDF_Kolmogorov_Waring_P0, 4},
+    {"_SkeweDF_Kolmogorov_Waring", (DL_FUNC) &_SkeweDF_Kolmogorov_Waring, 4},
+    {"_SkeweDF_RGHD_P0_calc_function", (DL_FUNC) &_SkeweDF_RGHD_P0_calc_function, 4},
+    {"_SkeweDF_RGHD_P0_calc_pi", (DL_FUNC) &_SkeweDF_RGHD_P0_calc_pi, 4},
+    {"_SkeweDF_RGHD_P0_calc", (DL_FUNC) &_SkeweDF_RGHD_P0_calc, 4},
+    {"_SkeweDF_RGHD_P0", (DL_FUNC) &_SkeweDF_RGHD_P0, 3},
+    {"_SkeweDF_RGHD", (DL_FUNC) &_SkeweDF_RGHD, 6},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_SkeweDF(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
 }

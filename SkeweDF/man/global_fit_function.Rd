@@ -9,7 +9,7 @@ global_fit_function(
   data,
   model_fn_name,
   iter = 1,
-  weighted_rt = F,
+  weighted_rt = FALSE,
   n_cores = 1,
   clust
 )

@@ -9,7 +9,7 @@ psi_criterion_RGHD_ratio(
   data,
   m,
   pmf_weight = 0,
-  weighted_rt = F,
+  weighted_rt = FALSE,
   left_trunc = 1,
   right_trunc = left_trunc + length(data) - 1
 )

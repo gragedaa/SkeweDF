@@ -7,7 +7,8 @@
 local_fit_RGHD_ratio(
   param_bounds,
   data,
-  weighted_rt = F,
+  weighted_rt = FALSE,
+  pmf_weight = 0,
   par_chunk = 100,
   par_chunk_size = 10,
   n_cores = 1,

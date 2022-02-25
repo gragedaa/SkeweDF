@@ -11,8 +11,8 @@ calculate_label_coords(
   y_upper_bound,
   x_buffer = 0.5,
   y_buffer = 0.5,
-  log_scale_x = F,
-  log_scale_y = F
+  log_scale_x = FALSE,
+  log_scale_y = FALSE
 )
 }
 \arguments{

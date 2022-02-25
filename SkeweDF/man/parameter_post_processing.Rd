@@ -4,12 +4,14 @@
 \alias{parameter_post_processing}
 \title{Parameter Optimization Helper Function}
 \usage{
-parameter_post_processing(parameter_df, model_fn_name)
+parameter_post_processing(parameter_df, model_fn_name, data)
 }
 \arguments{
 \item{parameter_df}{Output dataframe of optimized parameters using local algorithm}
 
 \item{model_fn_name}{Character vector used to indicate name of model function used for optimization}
+
+\item{data}{Vector of observed values}
 }
 \description{
 This function adds in additional columns to the optimized parameter output dataframe

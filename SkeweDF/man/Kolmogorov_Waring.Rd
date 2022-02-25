@@ -9,9 +9,9 @@ Kolmogorov_Waring(n, a, b, theta)
 \arguments{
 \item{n}{Length of vector to be generated}
 
-\item{a}{Parameter of the Kolmogorov Waring distribution function}
+\item{a}{Vector of parameters of the Kolmogorov Waring distribution function}
 
-\item{b}{Parameter of the Kolmogorov Waring distribution function}
+\item{b}{Vector of parameters of the Kolmogorov Waring distribution function}
 
 \item{theta}{Parameter of the Kolmogorov Waring distribution function}
 }

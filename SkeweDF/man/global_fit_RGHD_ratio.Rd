@@ -8,7 +8,7 @@ global_fit_RGHD_ratio(
   param_bounds,
   data,
   iter,
-  weighted_rt = F,
+  weighted_rt = FALSE,
   n_cores = 1,
   clust
 )

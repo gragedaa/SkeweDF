@@ -8,7 +8,8 @@ local_fit_function(
   param_bounds,
   data,
   model_fn_name,
-  weighted_rt = F,
+  weighted_rt = FALSE,
+  pmf_weight = 0,
   par_chunk = 100,
   par_chunk_size = 10,
   n_cores = 1,
@@ -22,7 +23,7 @@ local_fit_function(
 
 \item{data}{Vector of observed values}
 
-\item{model_fn_name}{Character vector indicating name of function of theoretical model to be used. For example, for Generalized_Yule(n, rho, alpha), model_fn_name <- 'Generalied Yule'}
+\item{model_fn_name}{Character vector indicating name of function of theoretical model to be used. For example, for Generalized_Yule(n, rho, alpha), model_fn_name <- 'Generalized_Yule'}
 
 \item{weighted_rt}{Boolean used to determine if the weighted right-tail cumulative distribution function should be used or not.}
 

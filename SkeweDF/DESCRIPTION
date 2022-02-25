@@ -1,13 +1,12 @@
 Package: SkeweDF
-Title: SkeweDF: A method for identification of skewed distributions determined by a birth-death processes with rational transition rates
-Version: 0.0.0.9000
+Title: Optimization of Skewed Distributions with Birth-Death Processes
+Version: 0.1.1
 Authors@R: 
     person(given = "Andre",
            family = "Grageda",
            role = c("aut", "cre"),
-           email = "gragedaa@upstate.edu",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+           email = "gragedaa@upstate.edu")
+Description: Implementations of models which follow the Kolmogorov Birth-Death process framework and functions which utilize these Kolmogorov Birth-Death process models for analysis of skewed distribution functions.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
@@ -27,5 +26,5 @@ RoxygenNote: 7.1.1
 LinkingTo: Rcpp
 NeedsCompilation: yes
 Packaged: 2020-08-24 20:46:50 UTC; user
-Author: Andre Grageda [aut, cre] (<https://orcid.org/YOUR-ORCID-ID>)
+Author: Andre Grageda [aut, cre]
 Maintainer: Andre Grageda <gragedaa@upstate.edu>
