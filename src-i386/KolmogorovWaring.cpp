@@ -54,7 +54,7 @@ std::vector<double> Kolmogorov_Waring(int n, Rcpp::NumericVector a, Rcpp::Numeri
     }
   }else if(b.length() > a.length()){
     for(int i = 0; i < (b.length() - a.length()); i++){
-      a.push_back(1.0);
+      a.push_back(0.0);
     }
   }
 
@@ -71,10 +71,10 @@ std::vector<double> Kolmogorov_Waring(int n, Rcpp::NumericVector a, Rcpp::Numeri
     p_values[i] = p_values[i-1] * theta;
 
     for(int j = 0; j < a.length(); j++){
-      p_values[i] =  p_values[i] * (a[j] + i - 1);
+      p_values[i] =  p_values[i] * (a[j] + i);
     }
     for(int j = 0; j < b.length();j++){
-      p_values[i] =  p_values[i] / (b[j] + i);
+      p_values[i] =  p_values[i] / (b[j] + i + 1);
     }
 
     sum_p += p_values[i];

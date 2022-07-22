@@ -1539,3 +1539,199 @@ append_predicted_values <- function(data, model, left_trunc = 1, right_trunc = l
   full_data <- c(predict, data)
   return(full_data)
 }
+
+additive_mixed_model <- function(model1, model2, model1_weight){
+  output <- (model1_weight * model1) + ((1-model1_weight) * model2)
+  return(output)
+}
+
+data_table_to_sample <- function(dt){
+  out <- c()
+  for(i in 1:nrow(dt)){
+    out <- c(out,rep(dt[i,1], dt[i,2]))
+  }
+  return(out)
+}
+
+sample_to_data_table <- function(sample){
+  out <- data.frame(table(sample))
+  colnames(out) <- c('x','Freq')
+  out[,1] <- out[,1] %>% as.character() %>% as.numeric()
+  tmp <- 1:max(out[,1]) %>% as.data.frame()
+  colnames(tmp) <- 'x'
+  out <- left_join(tmp,out)
+  out$Freq[is.na(out$Freq)] <- 0
+  return(out)
+}
+
+par_to_mixed_model <- function(n, x, d){
+  a1 <- x[1:d[1]]
+  b1 <- x[(d[1]+1):(2*d[1])]
+  theta1 <- x[(2*d[1]+1)]
+  
+  a2 <- x[(2*d[1]+2):(2*d[1]+2+d[2]-1)]
+  b2 <- x[(2*d[1]+2+d[2]):(2*d[1]+2+2*d[2]-1)]
+  theta2 <- x[2*d[1]+2+2*d[2]]
+  
+  model1_weight <- x[2*d[1]+2+2*d[2]+1]
+  
+  model1 <- Kolmogorov_Waring(n, a1, b1, theta1)
+  model2 <- Kolmogorov_Waring(n, a2, b2, theta2)
+  model <- additive_mixed_model(model1, model2, model1_weight)
+  
+  return(model)
+}
+
+psi_criterion_mixed_kw <- function(x, d, data, left_trunc, right_trunc, pmf_weight, weighted_rt){
+  pmf <- psi_criterion_mixed_kw_pmf(x, d, data, left_trunc, right_trunc)
+  cdf <- psi_criterion_mixed_kw_cdf(x, d, data, left_trunc, right_trunc, weighted_rt)
+  
+  return((pmf_weight * pmf) + ((1-pmf_weight)*cdf))
+}
+
+psi_criterion_mixed_kw_pmf <- function(x, d, data, left_trunc, right_trunc){
+  
+  a1 <- x[1:d[1]]
+  b1 <- x[(d[1]+1):(2*d[1])]
+  theta1 <- x[(2*d[1]+1)]
+  
+  a2 <- x[(2*d[1]+2):(2*d[1]+2+d[2]-1)]
+  b2 <- x[(2*d[1]+2+d[2]):(2*d[1]+2+2*d[2]-1)]
+  theta2 <- x[2*d[1]+2+2*d[2]]
+  
+  model1_weight <- x[2*d[1]+2+2*d[2]+1]
+  
+  model1 <- Kolmogorov_Waring(right_trunc, a1, b1, theta1)
+  model2 <- Kolmogorov_Waring(right_trunc, a2, b2, theta2)
+  model <- additive_mixed_model(model1, model2, model1_weight)
+  
+  model <- model[-1]
+  model <- model[left_trunc:right_trunc]
+  model <- model / sum(model)
+  model <- model * sum(data)
+  
+  
+  return(psi_criterion(data, model, length(x)) * -1)
+}
+
+psi_criterion_mixed_kw_cdf <- function(x, d, data, left_trunc, right_trunc, weighted_rt){
+  a1 <- x[1:d[1]]
+  b1 <- x[(d[1]+1):(2*d[1])]
+  theta1 <- x[(2*d[1]+1)]
+  
+  a2 <- x[(2*d[1]+2):(2*d[1]+2+d[2]-1)]
+  b2 <- x[(2*d[1]+2+d[2]):(2*d[1]+2+2*d[2]-1)]
+  theta2 <- x[2*d[1]+2+2*d[2]]
+  
+  model1_weight <- x[2*d[1]+2+2*d[2]+1]
+  
+  model1 <- Kolmogorov_Waring(right_trunc, a1, b1, theta1)
+  model2 <- Kolmogorov_Waring(right_trunc, a2, b2, theta2)
+  model <- additive_mixed_model(model1, model2, model1_weight)
+  model <- model[-1]
+  model <- model[left_trunc:right_trunc]
+  model <- model / sum(model)
+  model <- model * sum(data)
+  
+  if(weighted_rt){
+    data <- weighted_right_tail_cdf(data)
+    model <- weighted_right_tail_cdf(model)
+  }
+  else{
+    data <- right_tail_cdf(data)
+    model <- right_tail_cdf(model)
+  }
+  
+  
+  return(psi_criterion(data, model, length(x)) * -1)
+}
+
+
+fit_mixed_kw <- function(param_bounds,
+                         d,
+                         data,
+                         weighted_rt = FALSE,
+                         pmf_weight = 0.0,
+                         par_chunk = 100,
+                         par_chunk_size = 10,
+                         n_cores = 12,
+                         clust,
+                         left_trunc = 1,
+                         right_trunc = left_trunc+length(data)-1){
+  
+  data <- data / sum(data)
+  
+  standalone <- FALSE
+  
+  
+  if(missing(clust)){
+    standalone <- TRUE
+    clust <- makeCluster(n_cores)
+    clusterExport(clust, varlist = c('data','param_bounds','weighted_rt', 'par_chunk_size','d','left_trunc','right_trunc', 'pmf_weight'), envir = environment())
+    clusterCall(clust, function() library(SkeweDF))
+    clusterCall(clust, function() library(tidyverse))
+  }
+  
+  clusterExport(clust, varlist = c('data','param_bounds','weighted_rt', 'par_chunk_size','d','left_trunc','right_trunc', 'pmf_weight'), envir = environment())
+  
+  parameters <- parLapply(clust,1:par_chunk, function(q){
+    par_mat <- lapply(1:par_chunk_size, function(i){
+      par_vec <- c(rep(0, length(param_bounds)))
+      for(i in 1:length(param_bounds)){
+        par_vec[i] <- sample(param_bounds[[i]], size = 1, replace = TRUE)
+      }
+      return(par_vec)
+    }) %>% as.data.frame() %>% t() %>% as.matrix()
+    
+    param_lower <- c(rep(0, length(param_bounds)))
+    param_upper <- c(rep(0, length(param_bounds)))
+    
+    for(i in 1:length(param_bounds)){
+      param_lower[i] <- min(param_bounds[[i]])
+      param_upper[i] <- max(param_bounds[[i]])
+    }
+    
+    fn_parameters <- multistart(parmat = par_mat,fn = psi_criterion_mixed_kw,method = 'L-BFGS-B',
+                                lower = param_lower, upper = param_upper,
+                                data = data, d = d, pmf_weight = pmf_weight, weighted_rt = weighted_rt,
+                                left_trunc = left_trunc, right_trunc = right_trunc);
+    
+    fn_parameters$fevals <- NULL
+    fn_parameters$gevals <- NULL
+    fn_parameters$convergence <- NULL
+    
+    for(i in 1:d[1]){
+      colnames(fn_parameters)[i] <- paste0('a1-',i)
+    }
+    for(i in (d[1]+1):(2*d[1])){
+      colnames(fn_parameters)[i] <- paste0('b1-',i-d)
+    }
+    colnames(fn_parameters)[2*d[1]+1] <- paste0('theta1')
+    
+    for(i in (2*d[1]+2):(2*d[1]+2+d[2]-1)){
+      colnames(fn_parameters)[i] <- paste0('a2-',(i-(2*d[1]+d[2]-1)))
+    }
+    for(i in (2*d[1]+2+d[2]):(2*d[1]+2+2*d[2]-1)){
+      colnames(fn_parameters)[i] <- paste0('b2-',(i-(2*d[1]+2*d[2]-1)))
+    }
+    colnames(fn_parameters)[2*d[1]+2+2*d[2]] <- paste0('theta2')
+    #fn_parameters[1:m] <- t(apply(fn_parameters[1:m], 1, FUN=function(x) sort(x)))
+    #fn_parameters[(m+1):(length(fn_parameters)-2)] <- t(apply(fn_parameters[(m+1):(length(fn_parameters)-2)], 1, FUN=function(x) sort(x)))
+    
+    colnames(fn_parameters)[length(fn_parameters)-1] <- 'model1_weight'
+    colnames(fn_parameters)[length(fn_parameters)] <- 'Psi'
+    fn_parameters$Psi <- fn_parameters$Psi * -1
+    fn_parameters$pmf_weight <- pmf_weight
+    
+    return(fn_parameters)
+  }) %>% bind_rows()
+  
+  print('Complete')
+  
+  if(standalone){
+    stopCluster(clust)
+  }
+  
+  return(parameters)
+  
+}
