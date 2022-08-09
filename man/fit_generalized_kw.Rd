@@ -15,7 +15,8 @@ fit_generalized_kw(
   n_cores = 1,
   clust,
   left_trunc = 1,
-  right_trunc = left_trunc + length(data) - 1
+  right_trunc = left_trunc + length(data) - 1,
+  ratio = FALSE
 )
 }
 \arguments{
@@ -40,6 +41,8 @@ fit_generalized_kw(
 \item{left_trunc}{Int used to determine starting index of model to use for optimization}
 
 \item{right_trunc}{Int used to determine ending index of model to use for optimization}
+
+\item{ratio}{Boolean used to determine if parameters provide are a/b ratios rather than absolute values.}
 }
 \description{
 This function will take in a set of parameters and calculate goodness of fit based on the Psi criterion metric

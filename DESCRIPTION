@@ -23,7 +23,7 @@ Imports: Rcpp (>= 1.0.5),
  graphics (>= 3.6.3),
  utils (>= 3.6.3)
 RoxygenNote: 7.1.1
-LinkingTo: Rcpp
+LinkingTo: Rcpp, BH
 NeedsCompilation: yes
 Packaged: 2020-08-24 20:46:50 UTC; user
 Author: Andre Grageda [aut, cre]

@@ -474,243 +474,6 @@ local_fit_RGHD_ratio <- function(param_bounds, data, weighted_rt = FALSE, pmf_we
 
 }
 
-#' Global optimization of a given function given empirical data and parameter bounds
-#'
-#' This function generates a single set of optimized parameters and Psi Criterion for a given function within specified starting parameter bounds. This function uses a modified grid search method for optimization
-#' @param param_bounds A list of sequences which indicate space where parameters should be generated and fit
-#' @param data Vector of observed values
-#' @param model_fn_name Character vector indicating name of function of theoretical model to be used. For example, for Generalized_Yule(n, rho, alpha), model_fn_name <- 'Generalied Yule'
-#' @param iter Integer indicating number of iterations to run grid search. Increasing iterations will increase decimal point precision of output parameters.
-#' @param weighted_rt Boolean used to determine if the weighted right-tail cumulative distribution function should be used or not.
-#' @param n_cores Integer used to indicate number of cores to be used for this function if a socket cluster object is not defined.
-#' @param clust socket cluster object from 'parallel::makeCluster()'. This is used if you have already generated a socket cluster object and would like to run this functoin on it. If no object is defined, one will be made for this function call.
-#' @export
-global_fit_function <- function(param_bounds, data, model_fn_name, iter = 1, weighted_rt = FALSE, n_cores = 1, clust){
-
-  standalone <- FALSE
-
-  skeweDF_gVar_data <- data / sum(data)
-  skeweDF_gVar_model_fn <- get(model_fn_name)
-  skeweDF_gVar_weighted_rt <- weighted_rt
-
-  if(missing(clust)){
-   standalone <- TRUE
-   clust <- makeCluster(n_cores)
-   clusterExport(clust, varlist = c('skeweDF_gVar_data'), envir = environment())
-   clusterCall(clust, function() library(SkeweDF))
-  }
-
-  skeweDF_gVar_n_parameters <- length(param_bounds)
-
-  par_mat <- expand.grid(param_bounds)
-  par_mat$n <- length(data)
-  par_mat <- par_mat[c(length(par_mat),1:(length(par_mat)-1))]
-
-  skeweDF_gVar_output <- par_mat
-
-
-  if(weighted_rt){
-    skeweDF_gVar_right_cdf <- weighted_right_tail_cdf(skeweDF_gVar_data)
-  }else{
-    skeweDF_gVar_right_cdf <- right_tail_cdf(skeweDF_gVar_data)
-  }
-
-  print(paste('Parameter space generated - # parameters:', skeweDF_gVar_n_parameters))
-
-  clusterExport(clust, varlist = c('skeweDF_gVar_data','skeweDF_gVar_model_fn','skeweDF_gVar_output','skeweDF_gVar_n_parameters','skeweDF_gVar_right_cdf','skeweDF_gVar_weighted_rt'), envir = environment())
-  #clusterCall(clust, function() model_function <- model_fn)
-
-
-
-  criterion_list <- parLapply(clust, 1:nrow(skeweDF_gVar_output),function(i){
-    model <- invoke(skeweDF_gVar_model_fn, skeweDF_gVar_output[i,] %>% unlist() %>% unname())
-    if(skeweDF_gVar_weighted_rt){
-      model_right_cdf <- weighted_right_tail_cdf(model)
-    }
-    else{
-      model_right_cdf <- right_tail_cdf(model)
-    }
-    return(psi_criterion(skeweDF_gVar_right_cdf, model_right_cdf, skeweDF_gVar_n_parameters))
-  }) %>% unlist()
-
-  print('Iteration: 1')
-
-
-  skeweDF_gVar_output$criterion <- criterion_list
-  skeweDF_gVar_output <- skeweDF_gVar_output[!is.na(skeweDF_gVar_output$criterion ),]
-
-  if(iter >= 2){
-    for(q in 1:(iter-1)){
-      bVars <- skeweDF_gVar_output[skeweDF_gVar_output$criterion == max(skeweDF_gVar_output$criterion),][1,] %>% unlist()
-      bVars <- bVars[2:(length(bVars)-1)]
-
-      bVars_decimal <- gsub("^.*\\.","",  bVars %>% as.character()) %>% nchar()
-
-      bVars_decimal <- bVars_decimal + 1
-
-      seq_list <- 1:length(bVars) %>% as.list()
-
-      for(i in 1:length(seq_list)){
-        seq_list[[i]] <- seq(bVars[i] - 5 * (10 ^ -bVars_decimal[i]),bVars[i] + 5 * (10 ^ -bVars_decimal[i]),by = 10 ^ -bVars_decimal[i]) %>% round(bVars_decimal[i])
-
-      }
-
-      skeweDF_gVar_output <- expand.grid(seq_list)
-      skeweDF_gVar_output$n <- length(skeweDF_gVar_data)
-      skeweDF_gVar_output <- skeweDF_gVar_output[,c(length(skeweDF_gVar_output),1:(length(skeweDF_gVar_output)-1))]
-      colnames(skeweDF_gVar_output) <- formalArgs(skeweDF_gVar_model_fn)
-
-      clusterExport(clust, varlist = c('skeweDF_gVar_output'), envir = environment())
-      criterion_list <- parLapply(clust, 1:nrow(skeweDF_gVar_output),function(i){
-        model <- invoke(skeweDF_gVar_model_fn, skeweDF_gVar_output[i,] %>% unlist() %>% unname())
-        if(skeweDF_gVar_weighted_rt){
-          model_right_cdf <- weighted_right_tail_cdf(model)
-        }
-        else{
-          model_right_cdf <- right_tail_cdf(model)
-        }
-        return(psi_criterion(skeweDF_gVar_right_cdf, model_right_cdf, skeweDF_gVar_n_parameters))
-      }) %>% unlist()
-
-      skeweDF_gVar_output$criterion <- criterion_list
-      skeweDF_gVar_output <- skeweDF_gVar_output[!is.na(skeweDF_gVar_output$criterion ),]
-
-      print(paste('Iteration:', q+1))
-    }
-  }
-
-  print('Complete')
-
-  if(standalone){
-    stopCluster(clust)
-  }
-
-  colnames(skeweDF_gVar_output) <- c(formalArgs(skeweDF_gVar_model_fn),'Psi_RTCDF')
-  params <- skeweDF_gVar_output[skeweDF_gVar_output$Psi_RTCDF == max(skeweDF_gVar_output$Psi_RTCDF),][1,]
-
-  return(params)
-}
-
-#' Global optimization of the 2m-RGHD function given empirical data, r bounds, and q/r bounds.
-#'
-#' This function generates a single set of optimized parameters and Psi Criterion for a given function within specified starting parameter bounds. This function uses Limited Memory BFGS as it's gradient descent algorithm.
-#' @param param_bounds A list of sequences which indicate space where parameters should be generated and fit
-#' @param data Vector of observed values
-#' @param iter Integer indicating number of iterations to run grid search. Increasing iterations will increase decimal point precision of output parameters.
-#' @param weighted_rt Boolean used to determine if the weighted right-tail cumulative distribution function should be used or not.
-#' @param n_cores Integer used to indicate number of cores to be used for this function if a socket cluster object is not defined.
-#' @param clust socket cluster object from 'parallel::makeCluster()'. This is used if you have already generated a socket cluster object and would like to run this functoin on it. If no object is defined, one will be made for this function call.
-#' @export
-global_fit_RGHD_ratio <- function(param_bounds, data, iter, weighted_rt = FALSE, n_cores = 1, clust){
-
-  if(length(param_bounds) %% 2 != 0){
-    stop('Must have even number of parameters!')
-  }
-
-  standalone <- FALSE
-
-  skeweDF_gVar_data <- data / sum(data)
-  skeweDF_gVar_weighted_rt <- weighted_rt
-
-  if(missing(clust)){
-    standalone <- TRUE
-    clust <- makeCluster(n_cores)
-    clusterExport(clust, varlist = c('skeweDF_gVar_data'), envir = environment())
-    clusterCall(clust, function() library(SkeweDF))
-  }
-
-  skeweDF_gVar_m <- length(param_bounds) / 2
-  skeweDF_gVar_n_parameters <- skeweDF_gVar_m * 2
-
-  par_mat <- expand.grid(param_bounds)
-  par_mat$n <- length(data)
-  par_mat <- par_mat[c(length(par_mat),1:(length(par_mat)-1))]
-
-  skeweDF_gVar_output <- par_mat
-
-  if(weighted_rt){
-    skeweDF_gVar_right_cdf <- weighted_right_tail_cdf(data)
-  }else{
-    skeweDF_gVar_right_cdf <- right_tail_cdf(data)
-  }
-
-  print(paste('Parameter space generated - # parameters:', skeweDF_gVar_n_parameters))
-
-  clusterExport(clust, varlist = c('skeweDF_gVar_data','skeweDF_gVar_output','skeweDF_gVar_n_parameters','skeweDF_gVar_right_cdf','skeweDF_gVar_weighted_rt','skeweDF_gVar_m'), envir = environment())
-
-  criterion_list <- parLapply(clust, 1:nrow(skeweDF_gVar_output),function(i){
-    model <- RGHD(length(skeweDF_gVar_data), skeweDF_gVar_m, unlist(skeweDF_gVar_output[i,1:skeweDF_gVar_m]), unlist(skeweDF_gVar_output[i,1:skeweDF_gVar_m]) * unlist(skeweDF_gVar_output[i,(skeweDF_gVar_m+1):(skeweDF_gVar_m+skeweDF_gVar_m)]))
-    if(skeweDF_gVar_weighted_rt){
-      model_right_cdf <- weighted_right_tail_cdf(model)
-    }
-    else{
-      model_right_cdf <- right_tail_cdf(model)
-    }
-    return(psi_criterion(skeweDF_gVar_right_cdf, model_right_cdf, skeweDF_gVar_n_parameters))
-  }) %>% unlist()
-
-  print('Iteration: 1')
-
-
-  skeweDF_gVar_output$criterion <- criterion_list
-  skeweDF_gVar_output <- skeweDF_gVar_output[!is.na(skeweDF_gVar_output$criterion ),]
-
-  if(iter >= 2){
-    for(q in 1:(iter-1)){
-      bVars <- skeweDF_gVar_output[skeweDF_gVar_output$criterion == max(skeweDF_gVar_output$criterion),][1,] %>% unlist()
-      bVars <- bVars[2:(length(bVars)-1)]
-
-      bVars_decimal <- gsub("^.*\\.","",  bVars %>% as.character()) %>% nchar()
-
-      bVars_decimal <- bVars_decimal + 1
-
-      seq_list <- 1:length(bVars) %>% as.list()
-
-      for(i in 1:length(seq_list)){
-        seq_list[[i]] <- seq(bVars[i] - 5 * (10 ^ -bVars_decimal[i]),bVars[i] + 5 * (10 ^ -bVars_decimal[i]),by = 10 ^ -bVars_decimal[i]) %>% round(bVars_decimal[i])
-
-      }
-
-      skeweDF_gVar_output <- expand.grid(seq_list)
-      skeweDF_gVar_output$n <- length(data)
-      skeweDF_gVar_output <- skeweDF_gVar_output[,c(length(skeweDF_gVar_output),1:(length(skeweDF_gVar_output)-1))]
-
-      clusterExport(clust, varlist = c('skeweDF_gVar_output'), envir = environment())
-      criterion_list <- parLapply(clust, 1:nrow(skeweDF_gVar_output),function(i){
-        model <- RGHD(length(skeweDF_gVar_data), skeweDF_gVar_m, unlist(skeweDF_gVar_output[i,1:skeweDF_gVar_m]), unlist(skeweDF_gVar_output[i,1:skeweDF_gVar_m]) * unlist(skeweDF_gVar_output[i,(skeweDF_gVar_m+1):(skeweDF_gVar_m+skeweDF_gVar_m)]))
-        if(weighted_rt){
-          model_right_cdf <- weighted_right_tail_cdf(model)
-        }
-        else{
-          model_right_cdf <- right_tail_cdf(model)
-        }
-        return(psi_criterion(skeweDF_gVar_right_cdf, model_right_cdf, skeweDF_gVar_n_parameters))
-      }) %>% unlist()
-
-      skeweDF_gVar_output$criterion <- criterion_list
-      skeweDF_gVar_output <- skeweDF_gVar_output[!is.na(skeweDF_gVar_output$criterion ),]
-
-      print(paste('Iteration:', q+1))
-    }
-  }
-
-  print('Complete')
-
-  if(standalone){
-    stopCluster(clust)
-  }
-
-  for(i in 1:skeweDF_gVar_m){
-    colnames(skeweDF_gVar_output)[i+1] <- paste0('r',i)
-    colnames(skeweDF_gVar_output)[i+1+skeweDF_gVar_m] <- paste0('q',i)
-  }
-
-  colnames(skeweDF_gVar_output)[length(skeweDF_gVar_output)] <- 'Psi_RTCDF'
-  params <- skeweDF_gVar_output[skeweDF_gVar_output$Psi_RTCDF == max(skeweDF_gVar_output$Psi_RTCDF),][1,]
-
-  return(params)
-}
-
 
 #' Parameter Optimization Helper Function
 #'
@@ -1365,13 +1128,20 @@ skeweDF_auto <- function(title = 'Dataset', data, xlab = 'Random Variable', para
 #' @param right_trunc Int used to determine ending index of model to use for optimization
 #' @param pmf_weight Numeric of weight given to probability mass function for generation of Psi Criterion. For example, if pmf_weight <- 0.5, 50 percent of the Psi Criterion value will be attributed to the probability mass function while the other 50 percent will be attributed to the right-tail cumulative distribution function.
 #' @param weighted_rt Boolean used to determine if the weighted right-tail cumulative distribution function should be used or not.
+#' @param ratio Boolean used to determine if parameters provide are a/b ratios rather than absolute values.
 #' @export
-psi_criterion_generalized_kw <- function(x, d, data, left_trunc, right_trunc, pmf_weight, weighted_rt){
+psi_criterion_generalized_kw <- function(x, d, data, left_trunc, right_trunc, pmf_weight, weighted_rt, ratio = FALSE){
+  if(ratio){
+    x[1:d] <- x[1:d] * x[(d+1):(d+d)]
+    print(x)
+  }
+  
   pmf <- psi_criterion_generalized_kw_pmf(x, d, data, left_trunc, right_trunc)
   cdf <- psi_criterion_generalized_kw_cdf(x, d, data, left_trunc, right_trunc, weighted_rt)
 
   return((pmf_weight * pmf) + ((1-pmf_weight)*cdf))
 }
+
 
 #' Psi Criterion Generalized KW PMF
 #'
@@ -1445,8 +1215,9 @@ psi_criterion_generalized_kw_cdf <- function(x, d, data, left_trunc, right_trunc
 #' @param clust socket cluster object from 'parallel::makeCluster()'. This is used if you have already generated a socket cluster object and would like to run this functoin on it. If no object is defined, one will be made for this function call.
 #' @param left_trunc Int used to determine starting index of model to use for optimization
 #' @param right_trunc Int used to determine ending index of model to use for optimization
+#' @param ratio Boolean used to determine if parameters provide are a/b ratios rather than absolute values.
 #' @export
-fit_generalized_kw <- function(param_bounds, d, data, weighted_rt = FALSE, pmf_weight = 0.0, par_chunk = 100, par_chunk_size = 10, n_cores = 1, clust, left_trunc = 1, right_trunc = left_trunc+length(data)-1){
+fit_generalized_kw <- function(param_bounds, d, data, weighted_rt = FALSE, pmf_weight = 0.0, par_chunk = 100, par_chunk_size = 10, n_cores = 1, clust, left_trunc = 1, right_trunc = left_trunc+length(data)-1, ratio = FALSE){
 
     data <- data / sum(data)
 
@@ -1456,11 +1227,11 @@ fit_generalized_kw <- function(param_bounds, d, data, weighted_rt = FALSE, pmf_w
     if(missing(clust)){
       standalone <- TRUE
       clust <- makeCluster(n_cores)
-      clusterExport(clust, varlist = c('data','param_bounds','weighted_rt', 'par_chunk_size','d','left_trunc','right_trunc', 'pmf_weight'), envir = environment())
+      clusterExport(clust, varlist = c('data','param_bounds','weighted_rt', 'par_chunk_size','d','left_trunc','right_trunc', 'pmf_weight','ratio'), envir = environment())
       clusterCall(clust, function() library(SkeweDF))
     }
 
-    clusterExport(clust, varlist = c('data','param_bounds','weighted_rt', 'par_chunk_size','d','left_trunc','right_trunc', 'pmf_weight'), envir = environment())
+    clusterExport(clust, varlist = c('data','param_bounds','weighted_rt', 'par_chunk_size','d','left_trunc','right_trunc', 'pmf_weight','ratio'), envir = environment())
 
     parameters <- parLapply(clust,1:par_chunk, function(q){
       par_mat <- lapply(1:par_chunk_size, function(i){
@@ -1482,14 +1253,18 @@ fit_generalized_kw <- function(param_bounds, d, data, weighted_rt = FALSE, pmf_w
       fn_parameters <- multistart(parmat = par_mat,fn = psi_criterion_generalized_kw,method = 'L-BFGS-B',
                                   lower = param_lower, upper = param_upper,
                                   data = data, d = d, pmf_weight = pmf_weight, weighted_rt = weighted_rt,
-                                  left_trunc = left_trunc, right_trunc = right_trunc);
+                                  left_trunc = left_trunc, right_trunc = right_trunc, ratio = ratio);
 
       fn_parameters$fevals <- NULL
       fn_parameters$gevals <- NULL
       fn_parameters$convergence <- NULL
 
       for(i in 1:d){
-        colnames(fn_parameters)[i] <- paste0('a',i)
+        if(ratio){
+          colnames(fn_parameters)[i] <- paste0('ab_ratio',i)
+        }else{
+          colnames(fn_parameters)[i] <- paste0('a',i)
+        }
       }
       for(i in (d+1):length(fn_parameters)){
         colnames(fn_parameters)[i] <- paste0('b',i-d)
@@ -1512,11 +1287,13 @@ fit_generalized_kw <- function(param_bounds, d, data, weighted_rt = FALSE, pmf_w
     }
 
     parameters <- arrange(parameters, desc(parameters$Psi))
-    if(length(1:d) > 1){
-      parameters[1:d] <- t(apply(parameters[1:d], 1, FUN=function(x) sort(x)))
-    }
-    if(length((d+1):(length(parameters)-3)) > 1){
-      parameters[(d+1):(length(parameters)-3)] <- t(apply(parameters[(d+1):(length(parameters)-3)], 1, FUN=function(x) sort(x)))
+    if(!ratio){
+      if(length(1:d) > 1){
+        parameters[1:d] <- t(apply(parameters[1:d], 1, FUN=function(x) sort(x)))
+      }
+      if(length((d+1):(length(parameters)-3)) > 1){
+        parameters[(d+1):(length(parameters)-3)] <- t(apply(parameters[(d+1):(length(parameters)-3)], 1, FUN=function(x) sort(x)))
+      }
     }
 
 
@@ -1540,11 +1317,25 @@ append_predicted_values <- function(data, model, left_trunc = 1, right_trunc = l
   return(full_data)
 }
 
+#' Additive Mixed Model
+#'
+#' This function will return the weighted sum between two models of the same length
+#' @param model1 Vector.
+#' @param model2 Vector.
+#' @param model1_weight numeric. Weight of model1
+#' 
+#' @export
 additive_mixed_model <- function(model1, model2, model1_weight){
   output <- (model1_weight * model1) + ((1-model1_weight) * model2)
   return(output)
 }
 
+#' Data Table to Sample
+#' 
+#' Helper function which converts a frequency dataframe to a sample vector
+#' @param dt DataFrame. Frequency dataframe 
+#'
+#' @export
 data_table_to_sample <- function(dt){
   out <- c()
   for(i in 1:nrow(dt)){
@@ -1553,6 +1344,12 @@ data_table_to_sample <- function(dt){
   return(out)
 }
 
+#' Sample to Data Table
+#' 
+#' Helper function which converts a sample vector to a frequency dataframe.
+#' @param sample Vector
+#'
+#' @export
 sample_to_data_table <- function(sample){
   out <- data.frame(table(sample))
   colnames(out) <- c('x','Freq')
@@ -1564,6 +1361,14 @@ sample_to_data_table <- function(sample){
   return(out)
 }
 
+#' Parameters to Mixed Model
+#'
+#' Helper function which inputs a vector of parameters output from fit_mixed_kw and creates a model
+#' @param n Int. Length of model vector
+#' @param x Vector. Parameters
+#' @param d Vector. Dimensions of mixed model
+#'
+#' @export
 par_to_mixed_model <- function(n, x, d){
   a1 <- x[1:d[1]]
   b1 <- x[(d[1]+1):(2*d[1])]
@@ -1573,15 +1378,25 @@ par_to_mixed_model <- function(n, x, d){
   b2 <- x[(2*d[1]+2+d[2]):(2*d[1]+2+2*d[2]-1)]
   theta2 <- x[2*d[1]+2+2*d[2]]
   
-  model1_weight <- x[2*d[1]+2+2*d[2]+1]
+  model1_weight <- unlist(x[2*d[1]+2+2*d[2]+1])
   
-  model1 <- Kolmogorov_Waring(n, a1, b1, theta1)
-  model2 <- Kolmogorov_Waring(n, a2, b2, theta2)
+  model1 <- Kolmogorov_Waring(n, unlist(a1), unlist(b1), unlist(theta1))
+  model2 <- Kolmogorov_Waring(n, unlist(a2), unlist(b2), unlist(theta2))
   model <- additive_mixed_model(model1, model2, model1_weight)
   
   return(model)
 }
 
+#' Psi Criterion Mixed KW
+#'
+#' This function calculates the Psi criterion goodness of fit metric given a set of parameters for a mixed KW function
+#' @param x Vector of parameters
+#' @param d Int used to indicate the number of 'a' terms within the 'param_bounds' variable. The remaining values will be considered 'b' terms.
+#' @param data Vector of observed values
+#' @param left_trunc Int used to determine starting index of model to use for optimization
+#' @param right_trunc Int used to determine ending index of model to use for optimization
+#' @param weighted_rt Boolean used to determine if the weighted right-tail cumulative distribution function should be used or not.
+#' @export
 psi_criterion_mixed_kw <- function(x, d, data, left_trunc, right_trunc, pmf_weight, weighted_rt){
   pmf <- psi_criterion_mixed_kw_pmf(x, d, data, left_trunc, right_trunc)
   cdf <- psi_criterion_mixed_kw_cdf(x, d, data, left_trunc, right_trunc, weighted_rt)
@@ -1589,6 +1404,16 @@ psi_criterion_mixed_kw <- function(x, d, data, left_trunc, right_trunc, pmf_weig
   return((pmf_weight * pmf) + ((1-pmf_weight)*cdf))
 }
 
+#' Psi Criterion Mixed KW PMF
+#'
+#' This function calculates the Psi criterion goodness of fit metric given a set of parameters for the probability mass distribution function of the a mixed Generalized Kolmogorov Waring function.
+#' @param x Vector of parameters
+#' @param d Int used to indicate the number of 'a' terms within the 'param_bounds' variable. The remaining values will be considered 'b' terms.
+#' @param data Vector of observed values
+#' @param left_trunc Int used to determine starting index of model to use for optimization
+#' @param right_trunc Int used to determine ending index of model to use for optimization
+#' @param weighted_rt Boolean used to determine if the weighted right-tail cumulative distribution function should be used or not.
+#' @export
 psi_criterion_mixed_kw_pmf <- function(x, d, data, left_trunc, right_trunc){
   
   a1 <- x[1:d[1]]
@@ -1599,10 +1424,10 @@ psi_criterion_mixed_kw_pmf <- function(x, d, data, left_trunc, right_trunc){
   b2 <- x[(2*d[1]+2+d[2]):(2*d[1]+2+2*d[2]-1)]
   theta2 <- x[2*d[1]+2+2*d[2]]
   
-  model1_weight <- x[2*d[1]+2+2*d[2]+1]
+  model1_weight <- unlist(x[2*d[1]+2+2*d[2]+1])
   
-  model1 <- Kolmogorov_Waring(right_trunc, a1, b1, theta1)
-  model2 <- Kolmogorov_Waring(right_trunc, a2, b2, theta2)
+  model1 <- Kolmogorov_Waring(right_trunc, unlist(a1), unlist(b1), unlist(theta1))
+  model2 <- Kolmogorov_Waring(right_trunc, unlist(a2), unlist(b2), unlist(theta2))
   model <- additive_mixed_model(model1, model2, model1_weight)
   
   model <- model[-1]
@@ -1614,6 +1439,16 @@ psi_criterion_mixed_kw_pmf <- function(x, d, data, left_trunc, right_trunc){
   return(psi_criterion(data, model, length(x)) * -1)
 }
 
+#' Psi Criterion Mixed KW CDF
+#'
+#' This function calculates the Psi criterion goodness of fit metric given a set of parameters for the cumulative distribution function of the a mixed Generalized Kolmogorov Waring function.
+#' @param x Vector of parameters
+#' @param d Int used to indicate the number of 'a' terms within the 'param_bounds' variable. The remaining values will be considered 'b' terms.
+#' @param data Vector of observed values
+#' @param left_trunc Int used to determine starting index of model to use for optimization
+#' @param right_trunc Int used to determine ending index of model to use for optimization
+#' @param weighted_rt Boolean used to determine if the weighted right-tail cumulative distribution function should be used or not.
+#' @export
 psi_criterion_mixed_kw_cdf <- function(x, d, data, left_trunc, right_trunc, weighted_rt){
   a1 <- x[1:d[1]]
   b1 <- x[(d[1]+1):(2*d[1])]
@@ -1623,10 +1458,10 @@ psi_criterion_mixed_kw_cdf <- function(x, d, data, left_trunc, right_trunc, weig
   b2 <- x[(2*d[1]+2+d[2]):(2*d[1]+2+2*d[2]-1)]
   theta2 <- x[2*d[1]+2+2*d[2]]
   
-  model1_weight <- x[2*d[1]+2+2*d[2]+1]
+  model1_weight <- unlist(x[2*d[1]+2+2*d[2]+1])
   
-  model1 <- Kolmogorov_Waring(right_trunc, a1, b1, theta1)
-  model2 <- Kolmogorov_Waring(right_trunc, a2, b2, theta2)
+  model1 <- Kolmogorov_Waring(right_trunc, unlist(a1), unlist(b1), unlist(theta1))
+  model2 <- Kolmogorov_Waring(right_trunc, unlist(a2), unlist(b2), unlist(theta2))
   model <- additive_mixed_model(model1, model2, model1_weight)
   model <- model[-1]
   model <- model[left_trunc:right_trunc]
@@ -1646,7 +1481,21 @@ psi_criterion_mixed_kw_cdf <- function(x, d, data, left_trunc, right_trunc, weig
   return(psi_criterion(data, model, length(x)) * -1)
 }
 
-
+#' Fit Mixed Kolmogorov-Waring
+#'
+#'#' This function will take in a set of parameters and calculate goodness of fit based on the Psi criterion metric
+#' @param param_bounds A list of sequences which indicate space where parameters should be generated and fit
+#' @param d Int used to indicate the number of 'a' terms within the 'param_bounds' variable. The remaining values will be considered 'b' terms.
+#' @param data Vector of observed values
+#' @param weighted_rt Boolean used to determine if the weighted right-tail cumulative distribution function should be used or not.
+#' @param pmf_weight Float used to determine weight of probability mass function for goodness of fit calculation relative to the cumulative distribution function
+#' @param par_chunk Integer used to indicate number of optimization chunks to be run. Total number of rows in the output table = par_chunk * par_chunk_size
+#' @param par_chunk_size Integer used to indicate number of starting parameters to be generated and optimized in a given chunk. Total number of rows in the output table = par_chunk * par_chunk_size
+#' @param n_cores Integer used to indicate number of cores to be used for this function if a socket cluster object is not defined.
+#' @param clust socket cluster object from 'parallel::makeCluster()'. This is used if you have already generated a socket cluster object and would like to run this functoin on it. If no object is defined, one will be made for this function call.
+#' @param left_trunc Int used to determine starting index of model to use for optimization
+#' @param right_trunc Int used to determine ending index of model to use for optimization
+#' @export
 fit_mixed_kw <- function(param_bounds,
                          d,
                          data,
@@ -1701,18 +1550,18 @@ fit_mixed_kw <- function(param_bounds,
     fn_parameters$convergence <- NULL
     
     for(i in 1:d[1]){
-      colnames(fn_parameters)[i] <- paste0('a1-',i)
+      colnames(fn_parameters)[i] <- paste0('a1_',i)
     }
     for(i in (d[1]+1):(2*d[1])){
-      colnames(fn_parameters)[i] <- paste0('b1-',i-d)
+      colnames(fn_parameters)[i] <- paste0('b1_',i-d)
     }
     colnames(fn_parameters)[2*d[1]+1] <- paste0('theta1')
     
     for(i in (2*d[1]+2):(2*d[1]+2+d[2]-1)){
-      colnames(fn_parameters)[i] <- paste0('a2-',(i-(2*d[1]+d[2]-1)))
+      colnames(fn_parameters)[i] <- paste0('a1_',(i-(2*d[1]+d[2]-1)))
     }
     for(i in (2*d[1]+2+d[2]):(2*d[1]+2+2*d[2]-1)){
-      colnames(fn_parameters)[i] <- paste0('b2-',(i-(2*d[1]+2*d[2]-1)))
+      colnames(fn_parameters)[i] <- paste0('b1_',(i-(2*d[1]+2*d[2]-1)))
     }
     colnames(fn_parameters)[2*d[1]+2+2*d[2]] <- paste0('theta2')
     #fn_parameters[1:m] <- t(apply(fn_parameters[1:m], 1, FUN=function(x) sort(x)))

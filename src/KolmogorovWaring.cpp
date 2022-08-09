@@ -1,6 +1,9 @@
 #include <Rcpp.h>
 #include <vector>
+#include <math.h>
+#include <boost/math/special_functions.hpp>
 
+// [[Rcpp::depends(BH)]]
 using namespace Rcpp;
 
 double hypergeometric( double a, double b, double c, double x )
@@ -10,7 +13,7 @@ double hypergeometric( double a, double b, double c, double x )
   double value = 1.0 + term;
   int n = 1;
 
-  while ( abs( term ) > TOLERANCE )
+  while (abs( term ) > TOLERANCE )
   {
     a++, b++, c++, n++;
     term *= a * b * x / c / n;
@@ -20,19 +23,53 @@ double hypergeometric( double a, double b, double c, double x )
   return value;
 }
 
-//' Kolmogorov Waring P0 calculation
-//'
-//' Calculates P0 of Kolmogorov Waring distribution function given parameters
-//' @param a1 Parameter of the Kolmogorov Waring distribution function
-//' @param a2 Parameter of the Kolmogorov Waring distribution function
-//' @param b Parameter of the Kolmogorov Waring distribution function
-//' @param theta Parameter of the Kolmogorov Waring distribution function
+
 //' @export
 // [[Rcpp::export]]
 double Kolmogorov_Waring_P0(double a1, double a2, double b, double theta){
-  double out = hypergeometric(a1,a2,b+1.0, theta);
+  double out;
+  
+  if(theta > 1){
+    out = hypergeometric(a1,a2,b+1.0, theta);
+  }else{
+     out = boost::math::hypergeometric_pFq({a1,a2}, {b+1.0}, theta);
+  }
+  
   return(1/out);
 }
+
+
+//' Kolmogorov Waring Factorial Moment
+//'
+//' Calculates P0 of Kolmogorov Waring distribution function given parameters
+//' @param a1 Parameter of the Kolmogorov Waring distribution function
+//' @param b1 Parameter of the Kolmogorov Waring distribution function
+//' @param theta Parameter of the Kolmogorov Waring distribution function
+//' @param r Index of factorial moment to calculate
+//' @export
+// [[Rcpp::export]]
+double Kolmogorov_Waring_Moment(double a1, double b1, double theta, double r){
+  double fact = 1.0;
+  for(int i = 1; i<= r; i++){
+    fact = fact * i;
+  }
+  
+  double mid_theta = pow(theta,r);
+  double mid_a = pow(a1,r);
+  double mid_b = pow(b1+1.0,r);
+  double mid = mid_a/mid_b;
+  mid = mid * mid_theta *  Kolmogorov_Waring_P0(a1, 1, b1, theta);
+  
+  double hyp;
+  if(theta > 1){
+    hyp = hypergeometric(a1+r, 1.0+r, b1+1.0+r, theta);
+  }else{
+    hyp = boost::math::hypergeometric_pFq({a1+r, 1.0+r}, {b1+1.0+r}, theta);
+  }
+  
+  return(fact * mid * hyp);
+}
+
 
 //' Kolmogorov Waring
 //'
@@ -61,10 +98,10 @@ std::vector<double> Kolmogorov_Waring(int n, Rcpp::NumericVector a, Rcpp::Numeri
   if((a.length() == 1) & (b.length() == 1)){
     p_values[0] = Kolmogorov_Waring_P0(a[0], 1, b[0], theta);
   }else{
-
+    
     p_values[0] = Kolmogorov_Waring_P0(a[0],a[1], b[0], theta);
   }
-
+  
   double sum_p = p_values[0];
 
   for(int i = 1; i < n+1; i++){
