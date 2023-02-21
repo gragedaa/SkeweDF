@@ -5,6 +5,25 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
+// boost_hypergeometric_2F1
+double boost_hypergeometric_2F1(double a1, double a2, double b, double theta);
+RcppExport SEXP _SkeweDF_boost_hypergeometric_2F1(SEXP a1SEXP, SEXP a2SEXP, SEXP bSEXP, SEXP thetaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type a1(a1SEXP);
+    Rcpp::traits::input_parameter< double >::type a2(a2SEXP);
+    Rcpp::traits::input_parameter< double >::type b(bSEXP);
+    Rcpp::traits::input_parameter< double >::type theta(thetaSEXP);
+    rcpp_result_gen = Rcpp::wrap(boost_hypergeometric_2F1(a1, a2, b, theta));
+    return rcpp_result_gen;
+END_RCPP
+}
 // Kolmogorov_Waring_P0
 double Kolmogorov_Waring_P0(double a1, double a2, double b, double theta);
 RcppExport SEXP _SkeweDF_Kolmogorov_Waring_P0(SEXP a1SEXP, SEXP a2SEXP, SEXP bSEXP, SEXP thetaSEXP) {
@@ -120,6 +139,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_SkeweDF_boost_hypergeometric_2F1", (DL_FUNC) &_SkeweDF_boost_hypergeometric_2F1, 4},
     {"_SkeweDF_Kolmogorov_Waring_P0", (DL_FUNC) &_SkeweDF_Kolmogorov_Waring_P0, 4},
     {"_SkeweDF_Kolmogorov_Waring_Moment", (DL_FUNC) &_SkeweDF_Kolmogorov_Waring_Moment, 4},
     {"_SkeweDF_Kolmogorov_Waring", (DL_FUNC) &_SkeweDF_Kolmogorov_Waring, 4},

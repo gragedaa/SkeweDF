@@ -23,6 +23,11 @@ double hypergeometric( double a, double b, double c, double x )
   return value;
 }
 
+//' @export
+// [[Rcpp::export]]
+double boost_hypergeometric_2F1(double a1, double a2, double b, double theta){
+  return(boost::math::hypergeometric_pFq({a1,a2}, {b}, theta));
+}
 
 //' @export
 // [[Rcpp::export]]

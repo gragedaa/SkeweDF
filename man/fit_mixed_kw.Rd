@@ -18,6 +18,29 @@ fit_mixed_kw(
   right_trunc = left_trunc + length(data) - 1
 )
 }
+\arguments{
+\item{param_bounds}{A list of sequences which indicate space where parameters should be generated and fit}
+
+\item{d}{Int used to indicate the number of 'a' terms within the 'param_bounds' variable. The remaining values will be considered 'b' terms.}
+
+\item{data}{Vector of observed values}
+
+\item{weighted_rt}{Boolean used to determine if the weighted right-tail cumulative distribution function should be used or not.}
+
+\item{pmf_weight}{Float used to determine weight of probability mass function for goodness of fit calculation relative to the cumulative distribution function}
+
+\item{par_chunk}{Integer used to indicate number of optimization chunks to be run. Total number of rows in the output table = par_chunk * par_chunk_size}
+
+\item{par_chunk_size}{Integer used to indicate number of starting parameters to be generated and optimized in a given chunk. Total number of rows in the output table = par_chunk * par_chunk_size}
+
+\item{n_cores}{Integer used to indicate number of cores to be used for this function if a socket cluster object is not defined.}
+
+\item{clust}{socket cluster object from 'parallel::makeCluster()'. This is used if you have already generated a socket cluster object and would like to run this functoin on it. If no object is defined, one will be made for this function call.}
+
+\item{left_trunc}{Int used to determine starting index of model to use for optimization}
+
+\item{right_trunc}{Int used to determine ending index of model to use for optimization}
+}
 \description{
-Fit Mixed Kolmogorov-Waring
+#' This function will take in a set of parameters and calculate goodness of fit based on the Psi criterion metric
 }

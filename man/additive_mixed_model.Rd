@@ -6,6 +6,13 @@
 \usage{
 additive_mixed_model(model1, model2, model1_weight)
 }
+\arguments{
+\item{model1}{Vector.}
+
+\item{model2}{Vector.}
+
+\item{model1_weight}{numeric. Weight of model1}
+}
 \description{
-Additive Mixed Model
+This function will return the weighted sum between two models of the same length
 }

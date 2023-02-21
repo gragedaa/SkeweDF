@@ -14,6 +14,19 @@ psi_criterion_mixed_kw(
   weighted_rt
 )
 }
+\arguments{
+\item{x}{Vector of parameters}
+
+\item{d}{Int used to indicate the number of 'a' terms within the 'param_bounds' variable. The remaining values will be considered 'b' terms.}
+
+\item{data}{Vector of observed values}
+
+\item{left_trunc}{Int used to determine starting index of model to use for optimization}
+
+\item{right_trunc}{Int used to determine ending index of model to use for optimization}
+
+\item{weighted_rt}{Boolean used to determine if the weighted right-tail cumulative distribution function should be used or not.}
+}
 \description{
-Psi Criterion Mixed KW
+This function calculates the Psi criterion goodness of fit metric given a set of parameters for a mixed KW function
 }

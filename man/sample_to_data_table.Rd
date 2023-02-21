@@ -2,10 +2,13 @@
 % Please edit documentation in R/SkeweDF_functions.R
 \name{sample_to_data_table}
 \alias{sample_to_data_table}
-\title{Additive Mixed Model}
+\title{Sample to Data Table}
 \usage{
 sample_to_data_table(sample)
 }
+\arguments{
+\item{sample}{Vector}
+}
 \description{
-Additive Mixed Model
+Helper function which converts a sample vector to a frequency dataframe.
 }

@@ -2,6 +2,11 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 #' @export
+boost_hypergeometric_2F1 <- function(a1, a2, b, theta) {
+    .Call(`_SkeweDF_boost_hypergeometric_2F1`, a1, a2, b, theta)
+}
+
+#' @export
 Kolmogorov_Waring_P0 <- function(a1, a2, b, theta) {
     .Call(`_SkeweDF_Kolmogorov_Waring_P0`, a1, a2, b, theta)
 }

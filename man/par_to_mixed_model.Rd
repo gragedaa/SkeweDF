@@ -6,6 +6,13 @@
 \usage{
 par_to_mixed_model(n, x, d)
 }
+\arguments{
+\item{n}{Int. Length of model vector}
+
+\item{x}{Vector. Parameters}
+
+\item{d}{Vector. Dimensions of mixed model}
+}
 \description{
-Parameters to Mixed Model
+Helper function which inputs a vector of parameters output from fit_mixed_kw and creates a model
 }
