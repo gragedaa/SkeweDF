@@ -6,5 +6,3 @@ Department of Urology, SUNY Upstate Medical University, Syracuse, New York, USA
 Department of Biochemistry and Molecular Biology, SUNY Upstate Medical University, Syracuse, New York, USA
 
 Correspondence: kuznetsv@upstate.edu
-
-cat
