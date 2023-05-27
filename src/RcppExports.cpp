@@ -66,6 +66,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// Kolmogorov_Waring_no_trunc
+std::vector<double> Kolmogorov_Waring_no_trunc(int n, Rcpp::NumericVector a, Rcpp::NumericVector b, double theta);
+RcppExport SEXP _SkeweDF_Kolmogorov_Waring_no_trunc(SEXP nSEXP, SEXP aSEXP, SEXP bSEXP, SEXP thetaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type a(aSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type b(bSEXP);
+    Rcpp::traits::input_parameter< double >::type theta(thetaSEXP);
+    rcpp_result_gen = Rcpp::wrap(Kolmogorov_Waring_no_trunc(n, a, b, theta));
+    return rcpp_result_gen;
+END_RCPP
+}
 // RGHD_P0_calc_function
 double RGHD_P0_calc_function(int k, int m, Rcpp::NumericVector r, Rcpp::NumericVector q);
 RcppExport SEXP _SkeweDF_RGHD_P0_calc_function(SEXP kSEXP, SEXP mSEXP, SEXP rSEXP, SEXP qSEXP) {
@@ -143,6 +157,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_SkeweDF_Kolmogorov_Waring_P0", (DL_FUNC) &_SkeweDF_Kolmogorov_Waring_P0, 4},
     {"_SkeweDF_Kolmogorov_Waring_Moment", (DL_FUNC) &_SkeweDF_Kolmogorov_Waring_Moment, 4},
     {"_SkeweDF_Kolmogorov_Waring", (DL_FUNC) &_SkeweDF_Kolmogorov_Waring, 4},
+    {"_SkeweDF_Kolmogorov_Waring_no_trunc", (DL_FUNC) &_SkeweDF_Kolmogorov_Waring_no_trunc, 4},
     {"_SkeweDF_RGHD_P0_calc_function", (DL_FUNC) &_SkeweDF_RGHD_P0_calc_function, 4},
     {"_SkeweDF_RGHD_P0_calc_pi", (DL_FUNC) &_SkeweDF_RGHD_P0_calc_pi, 4},
     {"_SkeweDF_RGHD_P0_calc", (DL_FUNC) &_SkeweDF_RGHD_P0_calc, 4},

@@ -7,4 +7,16 @@ Department of Biochemistry and Molecular Biology, SUNY Upstate Medical Universit
 
 Correspondence: kuznetsv@upstate.edu
 
-cat
+## About
+
+This package contains a family of skewed distribution functions based on Kolmogorov birth-death process models. These functions have been implemented such that the models are returned as discrete numeric vectors. Fitting functions and helper functions have also been included.
+
+## Installation 
+
+```
+devtools::install_github('gragedaa/SkeweDF')
+```
+
+## Usage
+
+Please refer to `./vignettes/using_kw_functions.Rmd` to see some examples where Kolmogorov-Waring models are used.

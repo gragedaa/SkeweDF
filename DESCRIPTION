@@ -1,6 +1,6 @@
 Package: SkeweDF
 Title: Optimization of Skewed Distributions with Birth-Death Processes
-Version: 0.2.0
+Version: 1.0.0
 Authors@R: 
     person(given = "Andre",
            family = "Grageda",
@@ -22,7 +22,7 @@ Imports: Rcpp (>= 1.0.5),
  grDevices (>= 3.6.3),
  graphics (>= 3.6.3),
  utils (>= 3.6.3)
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.3
 LinkingTo: Rcpp, BH
 NeedsCompilation: yes
 Packaged: 2020-08-24 20:46:50 UTC; user

@@ -1,0 +1,17 @@
+#' Weighted Right-Tail Cumulative Distribution Function
+#'
+#' This function generates a vector of the weighted right-tail cumulative distribution function of a given vector of values. The weight of of each variable is determined by its position in the vector. For example, with a vector of length 5, element 5 will have weight 5/(5+4+3+2+1). Element 1 will have weight 1/(5+4+3+2+1)
+#' @param x Length of vector to be generated.
+#' @examples
+#' x <- c(1,2,3,4,5)
+#' weighted_right_tail_cdf(x)
+#' @export
+weighted_right_tail_cdf <- function(x){
+  output_cdf <- x[length(x):1]
+  output_cdf <- output_cdf * length(x):1
+  output_cdf <- output_cdf / sum(output_cdf)
+  for(i in 2:length(output_cdf)){
+    output_cdf[i] <- output_cdf[i] + output_cdf[i-1]
+  }
+  output_cdf <- output_cdf[length(output_cdf):1]
+}

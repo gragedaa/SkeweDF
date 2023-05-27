@@ -35,6 +35,18 @@ Kolmogorov_Waring <- function(n, a, b, theta) {
     .Call(`_SkeweDF_Kolmogorov_Waring`, n, a, b, theta)
 }
 
+#' Kolmogorov Waring no trunc
+#'
+#' Calculates vector of n length of Kolmogorov distribution function given parameters
+#' @param n Length of vector to be generated
+#' @param a Vector of parameters of the Kolmogorov Waring distribution function
+#' @param b Vector of parameters of the Kolmogorov Waring distribution function
+#' @param theta Parameter of the Kolmogorov Waring distribution function
+#' @export
+Kolmogorov_Waring_no_trunc <- function(n, a, b, theta) {
+    .Call(`_SkeweDF_Kolmogorov_Waring_no_trunc`, n, a, b, theta)
+}
+
 RGHD_P0_calc_function <- function(k, m, r, q) {
     .Call(`_SkeweDF_RGHD_P0_calc_function`, k, m, r, q)
 }
